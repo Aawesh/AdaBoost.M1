@@ -17,7 +17,7 @@ def generic_clf(Y_train, X_train, Y_test, X_test, clf):
            get_error_rate(pred_test, Y_test)
     
 """Adaboot algorithm implementation"""
-def adaboost_clf(Y_train, X_train, Y_test, X_test, M, clf):
+def adaboost_clf(Y_train, X_train, Y_test, X_test, M, clf,er_train,er_test):
     n_train, n_test = len(X_train), len(X_test)
     # Initialize weights
     w = np.ones(n_train) / n_train
@@ -45,10 +45,12 @@ def adaboost_clf(Y_train, X_train, Y_test, X_test, M, clf):
         pred_test = [sum(x) for x in zip(pred_test,
                                          [x * alpha_m for x in pred_test_i])]
     
-    pred_train, pred_test = np.sign(pred_train), np.sign(pred_test)
-    # Return error rate in train and test set
-    return get_error_rate(pred_train, Y_train), \
-           get_error_rate(pred_test, Y_test),clf,alpha_m
+        pred_train1, pred_test1 = np.sign(pred_train), np.sign(pred_test)
+        # Return error rate in train and test set
+        er_train.append(get_error_rate(pred_train1, Y_train))
+        er_test.append(get_error_rate(pred_test1, Y_test))
+
+    return er_train, er_test
 
 """Function to plot error vs number of iterations"""
 def plot_error_rate(er_train, er_test):
@@ -75,12 +77,6 @@ def formatData(data):
 
     return data
 
-def adaboost_predict(inputs,hypotheses, hypotheses_weight):
-    y = 0
-    for (h, alpha) in zip(hypotheses, hypotheses_weight):
-        y = y + alpha * h.predict(inputs)
-    return np.sign(y)
-
 """Driver program"""
 if __name__ == '__main__':
 
@@ -100,24 +96,7 @@ if __name__ == '__main__':
 
     # Fit Adaboost classifier using a decision tree stump
     er_train, er_test = [er_tree[0]], [er_tree[1]]
-    h,h_w = [],[]
-    x_range = range(10, 1000, 10)
-    for i in x_range:
-        op = adaboost_clf(Y_train, X_train, Y_test, X_test, i, clf_tree)
-        er_train.append(op[0])
-        er_test.append(op[1])
-        h.append(op[2])
-        h_w.append(op[3])
-
-    test = pd.read_csv("test_data.csv")
-    features = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Survived"]
-    test = test[features]
-    test = test.ix[:, :-1]
-
-    #Should give -1 if correct and in fact it does
-    print adaboost_predict(test, h, h_w)
-
-    # Compare error rate vs number of iterations
+    op = adaboost_clf(Y_train, X_train, Y_test, X_test, 1000, clf_tree,er_train,er_test)
     plot_error_rate(er_train, er_test)
 
 
