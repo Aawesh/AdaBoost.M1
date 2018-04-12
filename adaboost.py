@@ -98,5 +98,3 @@ if __name__ == '__main__':
     er_train, er_test = [er_tree[0]], [er_tree[1]]
     op = adaboost_clf(Y_train, X_train, Y_test, X_test, 1000, clf_tree,er_train,er_test)
     plot_error_rate(er_train, er_test)
-
-
